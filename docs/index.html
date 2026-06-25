@@ -123,19 +123,22 @@
   };
 
   // ─── Render ───────────────────────────────────────────────────────
+  function allDlButton(kind, manifest) {
+    const meta = manifest?.all_data?.[kind];
+    if (!meta) return `<span class="dl" style="opacity:0.3" title="not yet built">all_${kind}</span>`;
+    const url = `${RELEASE_BASE}/${meta.filename}`;
+    return `<a class="dl" href="${url}" title="${meta.rows.toLocaleString()} rows, sha256:${meta.sha256.slice(0,12)}…">all_${kind}<span class="sz">${fmtBytes(meta.bytes)}</span></a>`;
+  }
+
   function allDataRow(counts, manifest) {
-    const meta = manifest?.all_data;
-    const btn = meta
-      ? `<a class="dl" href="${RELEASE_BASE}/${meta.filename}" title="${meta.filename} · sha256:${meta.sha256.slice(0,12)}…">all-data<span class="sz">${fmtBytes(meta.bytes)}</span></a>`
-      : `<span class="dl" style="opacity:0.3" title="not yet built">all-data</span>`;
     return `
       <tr class="all-data-row">
-        <td class="pname">All projects (bundled .zip)</td>
+        <td class="pname">All projects (whole dataset)</td>
         <td>${fmtNum(counts.papers ?? 0)}</td>
         <td>${fmtNum(counts.figures ?? 0)}</td>
         <td>${fmtNum(counts.samples ?? 0)}</td>
         <td>${fmtNum(counts.curves ?? 0)}</td>
-        <td class="dl-cell">${btn}</td>
+        <td class="dl-cell">${allDlButton("papers", manifest)}${allDlButton("samples", manifest)}${allDlButton("curves", manifest)}</td>
       </tr>
     `;
   }

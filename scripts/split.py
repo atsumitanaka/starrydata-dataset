@@ -90,6 +90,22 @@ def split(zip_path: Path, out_dir: Path) -> dict:
 
     sample_key = samples["SID"] + "\x00" + samples["sample_id"]
 
+    all_data: dict[str, dict] = {}
+    for kind, df in (("papers", papers), ("samples", samples), ("curves", curves)):
+        fname = f"all_{kind}.csv.gz"
+        fpath = out_data / fname
+        size = gzip_write(df, fpath)
+        all_data[kind] = {
+            "filename": fname,
+            "rows": int(len(df)),
+            "bytes": size,
+            "sha256": sha256(fpath),
+        }
+    print(
+        f"[done] {'all (whole dataset)':40} papers={len(papers):6} samples={len(samples):6} curves={len(curves):7}",
+        file=sys.stderr,
+    )
+
     manifest: dict[str, dict] = {}
     for project in projects_sorted:
         mask = curve_projects.map(lambda ps, p=project: p in ps)
@@ -120,11 +136,7 @@ def split(zip_path: Path, out_dir: Path) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "db_snapshot": snapshot,
         "source_zip": zip_path.name,
-        "all_data": {
-            "filename": zip_path.name,
-            "bytes": zip_path.stat().st_size,
-            "sha256": sha256(zip_path),
-        },
+        "all_data": all_data,
         "projects": manifest,
     }
     (out_dir / "manifest.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False))

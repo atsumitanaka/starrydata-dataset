@@ -57,7 +57,7 @@ jobs:
           gh release create "$TAG" \
             --title "$NAME" \
             --notes "Auto-generated split of starrydata_dataset.zip ($(cat out/manifest.json | python -c 'import json,sys; print(json.load(sys.stdin)[\"db_snapshot\"])'))" \
-            out/data/*.csv.gz out/manifest.json starrydata_dataset.zip
+            out/data/*.csv.gz out/manifest.json
 
       - name: Update 'latest' release pointer
         env:
@@ -69,7 +69,7 @@ jobs:
           gh release create latest \
             --title "Latest split" \
             --notes "Mirror of ${{ steps.tag.outputs.tag }}. URLs of the form /releases/latest/download/<file> always point here." \
-            out/data/*.csv.gz out/manifest.json starrydata_dataset.zip
+            out/data/*.csv.gz out/manifest.json
 
       - name: Commit manifest.json to docs/
         run: |
