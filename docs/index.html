@@ -160,8 +160,17 @@
   }
 
   function renderTable(counts, manifest) {
-    const projects = Object.entries(counts.projects ?? {})
-      .sort((a, b) => (b[1].curves ?? 0) - (a[1].curves ?? 0));
+    // Sort by curves desc, but keep Battery-family projects adjacent
+    // (anchored to the largest battery's natural position).
+    const isBattery = (n) => /Battery/.test(n);
+    const all = Object.entries(counts.projects ?? {});
+    const batteryCurves = all.filter(([n]) => isBattery(n)).map(([, c]) => c.curves ?? 0);
+    const batteryAnchor = batteryCurves.length ? Math.max(...batteryCurves) : -Infinity;
+    const keyOf = ([name, c]) => isBattery(name) ? batteryAnchor : (c.curves ?? 0);
+    const projects = all.sort((a, b) => {
+      const diff = keyOf(b) - keyOf(a);
+      return diff !== 0 ? diff : (b[1].curves ?? 0) - (a[1].curves ?? 0);
+    });
 
     const rows = projects.map(([name, c]) => `
       <tr>
