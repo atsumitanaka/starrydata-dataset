@@ -1,4 +1,4 @@
-# Starrydata by Project
+# Starrydata Dataset
 
 [Starrydata2](https://starrydata.nims.go.jp/) の公式 all-data ダンプ（毎日 Google Drive に更新）を、
 プロジェクト別の CSV.gz に自動分割して GitHub Releases から配信します。
