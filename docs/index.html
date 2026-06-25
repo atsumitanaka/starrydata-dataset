@@ -95,10 +95,30 @@
     if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
     return `${(b / 1024 / 1024).toFixed(1)} MB`;
   };
-  const fmtDate = (iso) => {
-    if (!iso) return "—";
-    try { return new Date(iso).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }); }
-    catch { return iso; }
+  const TZ_LIST = [
+    { tz: "Asia/Tokyo", label: "JST" },
+    { tz: "UTC", label: "UTC" },
+    { tz: "America/New_York", label: "ET" },
+    { tz: "America/Los_Angeles", label: "PT" },
+  ];
+  const fmtInTZ = (d, tz) => {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(d);
+    const g = (t) => parts.find((p) => p.type === t).value;
+    return `${g("year")}-${g("month")}-${g("day")} ${g("hour")}:${g("minute")}`;
+  };
+  const fmtDate = (input) => {
+    if (!input) return "—";
+    // Accept both ISO ("2026-06-25T05:41:04+00:00")
+    // and snapshot strings ("2026-06-25 02:00:01 UTC+0900 (JST)").
+    const normalized = String(input).replace(
+      /UTC([+-])(\d{2})(\d{2}).*/, (_, s, h, m) => `${s}${h}:${m}`
+    );
+    const d = new Date(normalized);
+    if (isNaN(d)) return input;
+    return TZ_LIST.map(({ tz, label }) => `${fmtInTZ(d, tz)} ${label}`).join(" · ");
   };
 
   // ─── Render ───────────────────────────────────────────────────────
@@ -158,7 +178,7 @@
       ]);
       renderTotals(counts);
       renderTable(counts, manifest);
-      document.getElementById("snapshot").textContent = manifest.db_snapshot || "—";
+      document.getElementById("snapshot").textContent = fmtDate(manifest.db_snapshot);
       document.getElementById("generated").textContent = fmtDate(manifest.generated_at);
     } catch (e) {
       document.getElementById("content").outerHTML =
