@@ -29,14 +29,10 @@
   header a:hover { color: var(--accent-hi); }
   .meta-row { display: flex; gap: 24px; justify-content: center; margin-top: 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
   .meta-row b { color: var(--text); font-weight: 600; }
-  .all-data { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, rgba(96,165,250,0.10), rgba(168,85,247,0.10)); border: 1px solid rgba(96,165,250,0.35); border-radius: 10px; padding: 18px 22px; margin-bottom: 18px; flex-wrap: wrap; }
-  .all-data .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 4px; }
-  .all-data .title { font-size: 17px; font-weight: 600; color: var(--text); }
-  .all-data .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .all-data .dl-big { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 8px; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s; }
-  .all-data .dl-big:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
-  .all-data .dl-big .sz { font-weight: 400; opacity: 0.85; font-size: 12px; }
   .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  tr.all-data-row td { background: rgba(96, 165, 250, 0.08); border-bottom: 1px solid rgba(96, 165, 250, 0.25); }
+  tr.all-data-row:hover td { background: rgba(96, 165, 250, 0.14); }
+  tr.all-data-row td.pname { color: var(--accent); }
   .totals .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
   .totals .stat .n { font-size: 22px; font-weight: 700; color: var(--accent); }
   .totals .stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
@@ -70,7 +66,6 @@
     </div>
   </header>
 
-  <div id="all-data"></div>
   <div id="totals" class="totals"></div>
   <div id="content" class="loading">Loading…</div>
 
@@ -128,20 +123,20 @@
   };
 
   // ─── Render ───────────────────────────────────────────────────────
-  function renderAllData(manifest) {
+  function allDataRow(counts, manifest) {
     const meta = manifest?.all_data;
-    if (!meta) {
-      document.getElementById("all-data").innerHTML = "";
-      return;
-    }
-    const url = `${RELEASE_BASE}/${meta.filename}`;
-    document.getElementById("all-data").innerHTML = `
-      <div>
-        <div class="label">Full dataset (all projects bundled)</div>
-        <div class="title">${meta.filename}</div>
-        <div class="sub">Same zip mirrored from <a href="https://drive.google.com/drive/folders/1OVMP7j61CJFwLtJ-qZFef9ko40Othayh" target="_blank" rel="noopener" style="color:var(--accent)">official Google Drive</a> · sha256:${meta.sha256.slice(0,16)}…</div>
-      </div>
-      <a class="dl-big" href="${url}">⬇ Download all-data <span class="sz">${fmtBytes(meta.bytes)}</span></a>
+    const btn = meta
+      ? `<a class="dl" href="${RELEASE_BASE}/${meta.filename}" title="${meta.filename} · sha256:${meta.sha256.slice(0,12)}…">all-data<span class="sz">${fmtBytes(meta.bytes)}</span></a>`
+      : `<span class="dl" style="opacity:0.3" title="not yet built">all-data</span>`;
+    return `
+      <tr class="all-data-row">
+        <td class="pname">All projects (bundled .zip)</td>
+        <td>${fmtNum(counts.papers ?? 0)}</td>
+        <td>${fmtNum(counts.figures ?? 0)}</td>
+        <td>${fmtNum(counts.samples ?? 0)}</td>
+        <td>${fmtNum(counts.curves ?? 0)}</td>
+        <td class="dl-cell">${btn}</td>
+      </tr>
     `;
   }
 
@@ -179,10 +174,10 @@
       <table>
         <thead>
           <tr>
-            <th>Project</th><th>Papers</th><th>Figures</th><th>Samples</th><th>Curves</th><th style="text-align:center">Download (.csv.gz)</th>
+            <th>Project</th><th>Papers</th><th>Figures</th><th>Samples</th><th>Curves</th><th style="text-align:center">Download</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        <tbody>${allDataRow(counts, manifest)}${rows}</tbody>
       </table>
     `;
   }
@@ -199,7 +194,6 @@
         fetchJSON(COUNTS_URL),
         fetchJSON(MANIFEST_URL).catch(() => ({ projects: {} })),
       ]);
-      renderAllData(manifest);
       renderTotals(counts);
       renderTable(counts, manifest);
       document.getElementById("snapshot").textContent = fmtDate(manifest.db_snapshot);
