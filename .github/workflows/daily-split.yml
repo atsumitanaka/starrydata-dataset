@@ -32,7 +32,7 @@ jobs:
 
       - name: Download dataset from Google Drive
         run: |
-          gdown --id "$DRIVE_FILE_ID" -O starrydata_dataset.zip
+          gdown "$DRIVE_FILE_ID" -O starrydata_dataset.zip
           ls -lh starrydata_dataset.zip
 
       - name: Split into per-project files
