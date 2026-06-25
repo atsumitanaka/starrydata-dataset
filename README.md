@@ -20,15 +20,15 @@
 
 ## URLs
 
-- 最新分: `https://github.com/atsumitanaka/starrydata-dataset/releases/latest/download/<Project>_<kind>.csv.gz`
-- 日付指定: `https://github.com/atsumitanaka/starrydata-dataset/releases/download/data-YYYYMMDD/<Project>_<kind>.csv.gz`
-- メタデータ: `https://github.com/atsumitanaka/starrydata-dataset/releases/latest/download/manifest.json`
+- 最新分: `https://github.com/atsumitanaka/starrydata-datasets/releases/latest/download/<Project>_<kind>.csv.gz`
+- 日付指定: `https://github.com/atsumitanaka/starrydata-datasets/releases/download/data-YYYYMMDD/<Project>_<kind>.csv.gz`
+- メタデータ: `https://github.com/atsumitanaka/starrydata-datasets/releases/latest/download/manifest.json`
 
 ## Usage
 
 ```python
 import pandas as pd
-url = "https://github.com/atsumitanaka/starrydata-dataset/releases/latest/download/ThermoelectricMaterials_curves.csv.gz"
+url = "https://github.com/atsumitanaka/starrydata-datasets/releases/latest/download/ThermoelectricMaterials_curves.csv.gz"
 df = pd.read_csv(url, compression="gzip")
 ```
 
